@@ -6,6 +6,7 @@
 <title>SOVATHA — Client Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --navy: #0D1F3C;
@@ -847,12 +848,33 @@
     }
   }
 
-  function submitRequest() {
-    if (!selectedServices.length) {
-      toast('Please select at least one service');
-      return;
+  const SUPABASE_URL = 'https://tvdkwsynrmngvdtlkahf.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_Q90NeKhhOjjBSCjf6iKhyQ_RBDaDQDm';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function submitRequest() {
+    if (!selectedServices.length) { toast('Please select at least one service'); return; }
+    const period = document.querySelectorAll('.form-group input[type="text"]')[0]?.value || '';
+    const deadline = document.querySelectorAll('.form-group input[type="text"]')[1]?.value || '';
+    const notes = document.querySelector('.form-group textarea')?.value || '';
+
+    const btn = document.querySelector('#panel-request .btn-gold');
+    if (btn) { btn.textContent = 'Submitting…'; btn.disabled = true; }
+
+    for (const service of selectedServices) {
+      await sb.from('requests').insert([{
+        client_code: clientId,
+        client_name: client.name,
+        service,
+        period: period || null,
+        deadline: deadline || null,
+        notes: notes || null,
+        status: 'new',
+        urgent: false,
+      }]);
     }
-    // In production: POST to Google Apps Script → sends email to you
+
+    if (btn) { btn.textContent = 'Submit Request'; btn.disabled = false; }
     toast('Request submitted! SOVATHA will respond within 1 business day.');
     document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
     selectedServices = [];

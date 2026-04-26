@@ -6,515 +6,107 @@
 <title>SOVATHA — Admin Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root {
-    --navy: #0D1F3C;
-    --navy2: #162d52;
-    --gold: #B8965A;
-    --gold-light: #E8D5B0;
-    --gold-pale: #FAF5EC;
-    --cream: #F8F6F1;
-    --mid: #6B7280;
-    --border: #E5DDD0;
-    --white: #FFFFFF;
-    --sidebar: 240px;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--cream);
-    color: var(--navy);
-    min-height: 100vh;
-    display: flex;
-  }
-
-  /* ── Sidebar ── */
-  aside {
-    width: var(--sidebar);
-    background: var(--navy);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 0; left: 0;
-    z-index: 50;
-  }
-
-  .sidebar-logo {
-    padding: 1.5rem 1.25rem 1rem;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-  }
-
-  .sidebar-logo .brand {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--white);
-  }
-
-  .sidebar-logo .brand span { color: var(--gold); }
-  .sidebar-logo .sub { font-size: 0.7rem; color: rgba(255,255,255,0.35); margin-top: 2px; letter-spacing: 0.08em; text-transform: uppercase; }
-
-  nav { padding: 1rem 0; flex: 1; }
-
-  .nav-section {
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.25);
-    padding: 0.75rem 1.25rem 0.4rem;
-  }
-
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0.65rem 1.25rem;
-    font-size: 0.82rem;
-    color: rgba(255,255,255,0.55);
-    cursor: pointer;
-    transition: all 0.2s;
-    border-left: 2px solid transparent;
-    user-select: none;
-  }
-
-  .nav-item:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.04); }
-
-  .nav-item.active {
-    color: var(--gold);
-    border-left-color: var(--gold);
-    background: rgba(184,150,90,0.08);
-  }
-
-  .nav-item svg { width: 15px; height: 15px; stroke: currentColor; flex-shrink: 0; }
-
-  .nav-badge {
-    margin-left: auto;
-    background: var(--gold);
-    color: var(--navy);
-    font-size: 0.65rem;
-    font-weight: 600;
-    padding: 1px 7px;
-    border-radius: 10px;
-  }
-
-  .sidebar-footer {
-    padding: 1rem 1.25rem;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    font-size: 0.75rem;
-    color: rgba(255,255,255,0.3);
-  }
-
-  /* ── Main ── */
-  .main-wrap {
-    margin-left: var(--sidebar);
-    flex: 1;
-    min-height: 100vh;
-  }
-
-  .topbar {
-    background: var(--white);
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 40;
-  }
-
-  .page-title {
-    font-size: 0.9rem;
-    font-weight: 500;
-  }
-
-  .topbar-actions { display: flex; gap: 10px; align-items: center; }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 0.55rem 1.1rem;
-    border-radius: 7px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-  }
-
-  .btn-primary { background: var(--navy); color: var(--white); }
-  .btn-primary:hover { background: var(--navy2); }
-  .btn-gold { background: var(--gold); color: var(--white); }
-  .btn-gold:hover { background: #a07848; }
-  .btn-outline { background: transparent; color: var(--navy); border: 1px solid var(--border); }
-  .btn-outline:hover { background: var(--cream); }
-  .btn-sm { padding: 0.4rem 0.85rem; font-size: 0.78rem; }
-
-  content { display: block; padding: 2rem; }
-
-  /* ── Stats strip ── */
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .stat-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.25rem;
-  }
-
-  .stat-label { font-size: 0.72rem; color: var(--mid); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.5rem; }
-  .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 600; line-height: 1; }
-  .stat-sub { font-size: 0.75rem; color: var(--mid); margin-top: 4px; }
-
-  /* ── Panels ── */
-  .panel { display: none; }
-  .panel.active { display: block; }
-
-  /* ── Client table ── */
-  .table-wrap {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-  }
-
-  .table-header {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .table-header h3 { font-size: 0.9rem; font-weight: 500; }
-
-  table { width: 100%; border-collapse: collapse; }
-  th {
-    text-align: left;
-    font-size: 0.72rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--mid);
-    padding: 0.75rem 1.25rem;
-    background: var(--cream);
-    border-bottom: 1px solid var(--border);
-    font-weight: 500;
-  }
-
-  td {
-    padding: 0.9rem 1.25rem;
-    font-size: 0.85rem;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-  }
-
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--gold-pale); }
-
-  .client-dot {
-    width: 32px; height: 32px;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.72rem;
-    font-weight: 600;
-    margin-right: 8px;
-    vertical-align: middle;
-  }
-
-  .status-pill {
-    display: inline-block;
-    font-size: 0.72rem;
-    font-weight: 500;
-    padding: 3px 10px;
-    border-radius: 20px;
-  }
-
-  .pill-new        { background: #DBEAFE; color: #1E40AF; }
-  .pill-waiting    { background: #FEF3C7; color: #92400E; }
-  .pill-inprogress { background: #EDE9FE; color: #5B21B6; }
-  .pill-delivered  { background: #D1FAE5; color: #065F46; }
-  .pill-active     { background: #E0F2FE; color: #075985; }
-  .pill-overdue    { background: #FEE2E2; color: #991B1B; }
-  .pill-inactive   { background: #F1EFE8; color: #5F5E5A; }
-
-  .status-pill { cursor: pointer; user-select: none; }
-  .status-pill:hover { opacity: 0.8; }
-
-  .status-dropdown {
-    position: absolute;
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    z-index: 100;
-    min-width: 150px;
-    overflow: hidden;
-    animation: fadeIn 0.15s ease;
-  }
-
-  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } }
-
-  .status-option {
-    padding: 0.6rem 1rem;
-    font-size: 0.82rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background 0.15s;
-  }
-
-  .status-option:hover { background: var(--cream); }
-
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
-  .copy-link {
-    background: var(--gold-pale);
-    border: 1px solid var(--gold-light);
-    color: var(--gold);
-    padding: 4px 10px;
-    border-radius: 5px;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
-  }
-
-  .copy-link:hover { background: var(--gold); color: var(--white); }
-
-  /* ── Add client modal ── */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 200;
-    display: none;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--white);
-    border-radius: 14px;
-    padding: 2rem;
-    width: 100%;
-    max-width: 460px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    animation: modalIn 0.25s ease;
-  }
-
-  @keyframes modalIn { from { opacity: 0; transform: translateY(-12px) scale(0.97); } }
-
-  .modal h2 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.4rem;
-    font-weight: 500;
-    margin-bottom: 1.5rem;
-  }
-
-  .form-group { margin-bottom: 1rem; }
-
-  label {
-    display: block;
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: var(--navy);
-    margin-bottom: 0.35rem;
-  }
-
-  input[type="text"], input[type="email"], select {
-    width: 100%;
-    padding: 0.65rem 0.9rem;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.875rem;
-    color: var(--navy);
-    background: var(--white);
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  input:focus, select:focus { border-color: var(--gold); }
-
-  .modal-actions { display: flex; gap: 10px; margin-top: 1.5rem; }
-
-  /* ── Requests & Messages ── */
-  .req-item {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.1rem 1.25rem;
-    margin-bottom: 0.75rem;
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    transition: border-color 0.2s;
-  }
-
-  .req-item.urgent { border-left: 3px solid #E53E3E; }
-  .req-item.hidden { display: none; }
-
-  .req-icon {
-    width: 38px; height: 38px;
-    background: var(--gold-pale);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .req-body { flex: 1; min-width: 0; }
-  .req-body h4 { font-size: 0.88rem; font-weight: 500; margin-bottom: 4px; }
-  .req-body p { font-size: 0.8rem; color: var(--mid); line-height: 1.5; }
-  .req-time { font-size: 0.75rem; color: var(--mid); white-space: nowrap; }
-
-  .req-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 6px;
-  }
-
-  .deadline-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.72rem;
-    font-weight: 500;
-    padding: 2px 8px;
-    border-radius: 20px;
-    background: #FEF3C7;
-    color: #92400E;
-  }
-
-  .deadline-badge.overdue { background: #FEE2E2; color: #991B1B; }
-
-  .priority-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 2px 4px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    color: var(--mid);
-    transition: all 0.15s;
-    font-family: 'DM Sans', sans-serif;
-  }
-
-  .priority-btn:hover { background: #FEE2E2; color: #991B1B; }
-  .priority-btn.flagged { color: #E53E3E; }
-
-  .filter-bar {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-  }
-
-  .filter-btn {
-    padding: 5px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: var(--white);
-    font-size: 0.78rem;
-    font-weight: 500;
-    cursor: pointer;
-    color: var(--mid);
-    transition: all 0.15s;
-    font-family: 'DM Sans', sans-serif;
-  }
-
-  .filter-btn:hover { border-color: var(--gold); color: var(--navy); }
-  .filter-btn.active { background: var(--navy); color: var(--white); border-color: var(--navy); }
-
-  .req-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-
-  .reply-modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 300;
-    display: none;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .reply-modal-overlay.open { display: flex; }
-
-  .reply-modal {
-    background: var(--white);
-    border-radius: 14px;
-    padding: 1.75rem;
-    width: 100%;
-    max-width: 480px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    animation: modalIn 0.2s ease;
-  }
-
-  .reply-modal h3 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.3rem;
-    font-weight: 500;
-    margin-bottom: 0.25rem;
-  }
-
-  .reply-modal .sub { font-size: 0.8rem; color: var(--mid); margin-bottom: 1.25rem; }
-
-  .reply-modal textarea {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.875rem;
-    color: var(--navy);
-    resize: vertical;
-    min-height: 110px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  .reply-modal textarea:focus { border-color: var(--gold); }
-  .reply-modal-actions { display: flex; gap: 10px; margin-top: 1rem; }
-
-  /* ── Toast ── */
-  .toast {
-    position: fixed;
-    bottom: 1.5rem;
-    right: 1.5rem;
-    background: var(--navy);
-    color: var(--white);
-    padding: 0.85rem 1.25rem;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
-    z-index: 999;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  }
-
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast .dot { width: 8px; height: 8px; background: var(--gold); border-radius: 50%; flex-shrink:0; }
+  :root { --navy:#0D1F3C; --navy2:#162d52; --gold:#B8965A; --gold-light:#E8D5B0; --gold-pale:#FAF5EC; --cream:#F8F6F1; --mid:#6B7280; --border:#E5DDD0; --white:#FFFFFF; --sidebar:240px; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--navy); min-height:100vh; display:flex; }
+  aside { width:var(--sidebar); background:var(--navy); min-height:100vh; display:flex; flex-direction:column; position:fixed; top:0; left:0; z-index:50; }
+  .sidebar-logo { padding:1.5rem 1.25rem 1rem; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .sidebar-logo .brand { font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:600; color:var(--white); }
+  .sidebar-logo .brand span { color:var(--gold); }
+  .sidebar-logo .sub { font-size:0.7rem; color:rgba(255,255,255,0.35); margin-top:2px; letter-spacing:0.08em; text-transform:uppercase; }
+  nav { padding:1rem 0; flex:1; }
+  .nav-section { font-size:0.65rem; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.25); padding:0.75rem 1.25rem 0.4rem; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:0.65rem 1.25rem; font-size:0.82rem; color:rgba(255,255,255,0.55); cursor:pointer; transition:all 0.2s; border-left:2px solid transparent; user-select:none; }
+  .nav-item:hover { color:rgba(255,255,255,0.85); background:rgba(255,255,255,0.04); }
+  .nav-item.active { color:var(--gold); border-left-color:var(--gold); background:rgba(184,150,90,0.08); }
+  .nav-item svg { width:15px; height:15px; stroke:currentColor; flex-shrink:0; }
+  .nav-badge { margin-left:auto; background:var(--gold); color:var(--navy); font-size:0.65rem; font-weight:600; padding:1px 7px; border-radius:10px; }
+  .sidebar-footer { padding:1rem 1.25rem; border-top:1px solid rgba(255,255,255,0.06); font-size:0.75rem; color:rgba(255,255,255,0.3); }
+  .main-wrap { margin-left:var(--sidebar); flex:1; min-height:100vh; }
+  .topbar { background:var(--white); border-bottom:1px solid var(--border); padding:0 2rem; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:40; }
+  .page-title { font-size:0.9rem; font-weight:500; }
+  .btn { display:inline-flex; align-items:center; gap:7px; padding:0.55rem 1.1rem; border-radius:7px; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; cursor:pointer; transition:all 0.2s; border:none; }
+  .btn-primary { background:var(--navy); color:var(--white); }
+  .btn-gold { background:var(--gold); color:var(--white); }
+  .btn-gold:hover { background:#a07848; }
+  .btn-outline { background:transparent; color:var(--navy); border:1px solid var(--border); }
+  .btn-outline:hover { background:var(--cream); }
+  .btn-sm { padding:0.38rem 0.85rem; font-size:0.78rem; }
+  .btn-danger { background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; }
+  .btn-danger:hover { background:#991B1B; color:white; }
+  content { display:block; padding:2rem; }
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:2rem; }
+  .stat-card { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:1.25rem; }
+  .stat-label { font-size:0.72rem; color:var(--mid); letter-spacing:0.05em; text-transform:uppercase; margin-bottom:0.5rem; }
+  .stat-value { font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; line-height:1; }
+  .stat-sub { font-size:0.75rem; color:var(--mid); margin-top:4px; }
+  .panel { display:none; }
+  .panel.active { display:block; }
+  .table-wrap { background:var(--white); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .table-header { padding:1rem 1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .table-header h3 { font-size:0.9rem; font-weight:500; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--mid); padding:0.75rem 1.25rem; background:var(--cream); border-bottom:1px solid var(--border); font-weight:500; }
+  td { padding:0.9rem 1.25rem; font-size:0.85rem; border-bottom:1px solid var(--border); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:var(--gold-pale); }
+  .client-dot { width:32px; height:32px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:600; margin-right:8px; vertical-align:middle; }
+  .status-pill { display:inline-block; font-size:0.72rem; font-weight:500; padding:3px 10px; border-radius:20px; cursor:pointer; user-select:none; }
+  .status-pill:hover { opacity:0.8; }
+  .pill-new { background:#DBEAFE; color:#1E40AF; }
+  .pill-waiting { background:#FEF3C7; color:#92400E; }
+  .pill-inprogress { background:#EDE9FE; color:#5B21B6; }
+  .pill-delivered { background:#D1FAE5; color:#065F46; }
+  .pill-active { background:#E0F2FE; color:#075985; }
+  .pill-overdue { background:#FEE2E2; color:#991B1B; }
+  .pill-inactive { background:#F1EFE8; color:#5F5E5A; }
+  .status-dropdown { position:fixed; background:var(--white); border:1px solid var(--border); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:500; min-width:150px; overflow:hidden; }
+  .status-option { padding:0.6rem 1rem; font-size:0.82rem; cursor:pointer; display:flex; align-items:center; gap:8px; transition:background 0.15s; }
+  .status-option:hover { background:var(--cream); }
+  .status-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .copy-link { background:var(--gold-pale); border:1px solid var(--gold-light); color:var(--gold); padding:4px 10px; border-radius:5px; font-size:0.75rem; cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+  .copy-link:hover { background:var(--gold); color:var(--white); }
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; display:none; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--white); border-radius:14px; padding:2rem; width:100%; max-width:460px; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation:modalIn 0.25s ease; }
+  @keyframes modalIn { from { opacity:0; transform:translateY(-12px) scale(0.97); } }
+  .modal h2 { font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:500; margin-bottom:1.5rem; }
+  .form-group { margin-bottom:1rem; }
+  label { display:block; font-size:0.78rem; font-weight:500; color:var(--navy); margin-bottom:0.35rem; }
+  input[type="text"], input[type="email"], select { width:100%; padding:0.65rem 0.9rem; border:1px solid var(--border); border-radius:7px; font-family:'DM Sans',sans-serif; font-size:0.875rem; color:var(--navy); background:var(--white); outline:none; transition:border-color 0.2s; }
+  input:focus, select:focus { border-color:var(--gold); }
+  .modal-actions { display:flex; gap:10px; margin-top:1.5rem; }
+  .req-item { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.25rem; margin-bottom:0.75rem; display:flex; align-items:flex-start; gap:14px; }
+  .req-item.urgent { border-left:3px solid #E53E3E; }
+  .req-icon { width:38px; height:38px; background:var(--gold-pale); border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .req-body { flex:1; min-width:0; }
+  .req-body h4 { font-size:0.88rem; font-weight:500; margin-bottom:4px; }
+  .req-body p { font-size:0.8rem; color:var(--mid); line-height:1.5; }
+  .req-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:6px; }
+  .req-actions { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+  .deadline-badge { display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; font-weight:500; padding:2px 8px; border-radius:20px; background:#FEF3C7; color:#92400E; }
+  .deadline-badge.overdue { background:#FEE2E2; color:#991B1B; }
+  .priority-btn { background:none; border:1px solid var(--border); cursor:pointer; padding:2px 8px; border-radius:4px; font-size:0.75rem; color:var(--mid); transition:all 0.15s; font-family:'DM Sans',sans-serif; }
+  .priority-btn:hover { background:#FEE2E2; color:#991B1B; border-color:#FCA5A5; }
+  .priority-btn.flagged { color:#E53E3E; background:#FEE2E2; border-color:#FCA5A5; }
+  .filter-bar { display:flex; gap:6px; margin-bottom:1.25rem; flex-wrap:wrap; }
+  .filter-btn { padding:5px 14px; border-radius:20px; border:1px solid var(--border); background:var(--white); font-size:0.78rem; font-weight:500; cursor:pointer; color:var(--mid); transition:all 0.15s; font-family:'DM Sans',sans-serif; }
+  .filter-btn:hover { border-color:var(--gold); color:var(--navy); }
+  .filter-btn.active { background:var(--navy); color:var(--white); border-color:var(--navy); }
+  .reply-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; display:none; align-items:center; justify-content:center; }
+  .reply-modal-overlay.open { display:flex; }
+  .reply-modal { background:var(--white); border-radius:14px; padding:1.75rem; width:100%; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation:modalIn 0.2s ease; }
+  .reply-modal h3 { font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:500; margin-bottom:0.25rem; }
+  .reply-modal .sub { font-size:0.8rem; color:var(--mid); margin-bottom:1.25rem; }
+  .reply-modal textarea { width:100%; padding:0.75rem 1rem; border:1px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:0.875rem; color:var(--navy); resize:vertical; min-height:110px; outline:none; transition:border-color 0.2s; }
+  .reply-modal textarea:focus { border-color:var(--gold); }
+  .reply-modal-actions { display:flex; gap:10px; margin-top:1rem; }
+  .loading { text-align:center; padding:2rem; color:var(--mid); font-size:0.85rem; }
+  .toast { position:fixed; bottom:1.5rem; right:1.5rem; background:var(--navy); color:var(--white); padding:0.85rem 1.25rem; border-radius:8px; font-size:0.85rem; display:flex; align-items:center; gap:10px; transform:translateY(80px); opacity:0; transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1); z-index:999; box-shadow:0 8px 24px rgba(0,0,0,0.15); }
+  .toast.show { transform:translateY(0); opacity:1; }
+  .toast .dot { width:8px; height:8px; background:var(--gold); border-radius:50%; flex-shrink:0; }
 </style>
 </head>
 <body>
@@ -527,142 +119,54 @@
   <nav>
     <div class="nav-section">Overview</div>
     <div class="nav-item active" onclick="navTo(this,'overview')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      Overview
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Overview
     </div>
     <div class="nav-section">Clients</div>
     <div class="nav-item" onclick="navTo(this,'clients')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-      All Clients
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>All Clients
     </div>
     <div class="nav-section">Activity</div>
     <div class="nav-item" onclick="navTo(this,'requests')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       Service Requests
-      <span id="nav-badge-req" class="nav-badge">0</span>
-    </div>
-    <div class="nav-item" onclick="navTo(this,'messages')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      Messages
-      <span class="nav-badge">2</span>
+      <span id="nav-badge-req" class="nav-badge" style="display:none">0</span>
     </div>
   </nav>
   <div class="sidebar-footer">sovatha@consulting.com</div>
 </aside>
 
 <div class="main-wrap">
-
   <div class="topbar">
     <span class="page-title" id="page-title">Overview</span>
-    <div class="topbar-actions">
-      <button class="btn btn-gold" onclick="openModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Client
-      </button>
-    </div>
+    <button class="btn btn-gold" onclick="openModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Client
+    </button>
   </div>
 
   <content>
-
-    <!-- ── OVERVIEW ── -->
     <div id="panel-overview" class="panel active">
       <div class="stats">
-        <div class="stat-card">
-          <div class="stat-label">Active Clients</div>
-          <div class="stat-value" id="stat-clients">4</div>
-          <div class="stat-sub">↑ 1 this month</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Pending Requests</div>
-          <div class="stat-value" style="color:var(--gold)">3</div>
-          <div class="stat-sub">Awaiting action</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Files Uploaded</div>
-          <div class="stat-value">12</div>
-          <div class="stat-sub">This month</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Unread Messages</div>
-          <div class="stat-value" style="color:var(--gold)">2</div>
-          <div class="stat-sub">From 2 clients</div>
-        </div>
+        <div class="stat-card"><div class="stat-label">Total Clients</div><div class="stat-value" id="stat-clients">—</div><div class="stat-sub">In database</div></div>
+        <div class="stat-card"><div class="stat-label">New Requests</div><div class="stat-value" id="stat-new-req" style="color:var(--gold)">—</div><div class="stat-sub">Awaiting action</div></div>
+        <div class="stat-card"><div class="stat-label">In Progress</div><div class="stat-value" id="stat-inprogress">—</div><div class="stat-sub">Currently working</div></div>
+        <div class="stat-card"><div class="stat-label">Urgent</div><div class="stat-value" id="stat-urgent" style="color:#E53E3E">—</div><div class="stat-sub">Flagged requests</div></div>
       </div>
-
-      <!-- Recent requests -->
-      <div style="margin-bottom:1.5rem;">
-        <h3 style="font-size:0.9rem; font-weight:500; margin-bottom:1rem;">Recent Service Requests</h3>
-        <div class="req-item">
-          <div class="req-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg></div>
-          <div class="req-body">
-            <h4>Financial Statement Preparation</h4>
-            <p>Khmer Angkor Co., Ltd · Q1 2025 · Deadline: 20 May</p>
-          </div>
-          <div>
-            <span class="status-pill pill-new">New</span>
-            <div class="req-time" style="margin-top:4px;">Today, 9:14 AM</div>
-          </div>
-        </div>
-        <div class="req-item">
-          <div class="req-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></div>
-          <div class="req-body">
-            <h4>Monthly Tax Filing — VAT, Salary Tax</h4>
-            <p>Mekong Trading Ltd · March 2025</p>
-          </div>
-          <div>
-            <span class="status-pill pill-pending">In Progress</span>
-            <div class="req-time" style="margin-top:4px;">Yesterday</div>
-          </div>
-        </div>
-        <div class="req-item">
-          <div class="req-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/></svg></div>
-          <div class="req-body">
-            <h4>Accounting Data Entry</h4>
-            <p>Phnom Penh Holdings · April 2025 · Monthly</p>
-          </div>
-          <div>
-            <span class="status-pill pill-active">Done</span>
-            <div class="req-time" style="margin-top:4px;">24 Apr</div>
-          </div>
-        </div>
-      </div>
+      <div id="overview-clients"></div>
     </div>
 
-    <!-- ── CLIENTS ── -->
     <div id="panel-clients" class="panel">
       <div class="table-wrap">
-        <div class="table-header">
-          <h3>All Clients</h3>
-          <button class="btn btn-gold btn-sm" onclick="openModal()">+ Add Client</button>
-        </div>
-        <table id="client-table">
-          <thead>
-            <tr>
-              <th>Company</th>
-              <th>Services</th>
-              <th>Status</th>
-              <th>Portal Link</th>
-              <th>Google Drive</th>
-            </tr>
-          </thead>
-          <tbody id="client-tbody">
-            <tr id="empty-row">
-              <td colspan="5" style="text-align:center; color:var(--mid); padding:2rem; font-size:0.85rem;">
-                No clients yet — click <strong>+ Add Client</strong> to get started.
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-header"><h3>All Clients</h3><button class="btn btn-gold btn-sm" onclick="openModal()">+ Add Client</button></div>
+        <table><thead><tr><th>Company</th><th>Services</th><th>Status</th><th>Portal Link</th><th>Actions</th></tr></thead>
+        <tbody id="client-tbody"><tr><td colspan="5" class="loading">Loading…</td></tr></tbody></table>
       </div>
     </div>
 
-    <!-- ── REQUESTS ── -->
     <div id="panel-requests" class="panel">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
         <h3 style="font-size:0.9rem; font-weight:500;">Service Requests</h3>
-        <span id="req-count" style="font-size:0.78rem; color:var(--mid);">0 requests</span>
+        <span id="req-count" style="font-size:0.78rem; color:var(--mid);"></span>
       </div>
-
       <div class="filter-bar">
         <button class="filter-btn active" onclick="filterReqs(this,'all')">All</button>
         <button class="filter-btn" onclick="filterReqs(this,'new')">New</button>
@@ -670,75 +174,33 @@
         <button class="filter-btn" onclick="filterReqs(this,'delivered')">Delivered</button>
         <button class="filter-btn" onclick="filterReqs(this,'urgent')">Urgent</button>
       </div>
-
-      <div id="req-list">
-        <div id="req-empty" style="text-align:center; padding:3rem 1rem; color:var(--mid); font-size:0.875rem;">
-          No service requests yet. Clients can submit requests from their portal.
-        </div>
-      </div>
+      <div id="req-list"><div class="loading">Loading…</div></div>
     </div>
-
-    <!-- ── MESSAGES ── -->
-    <div id="panel-messages" class="panel">
-      <h3 style="font-size:0.9rem; font-weight:500; margin-bottom:1rem;">Client Messages</h3>
-      <div class="req-item" style="cursor:pointer;" onclick="toast('Opening thread with Khmer Angkor…')">
-        <div class="client-dot" style="background:#EFF6FF; color:#1E40AF; border-radius:50%; width:38px; height:38px; font-size:0.78rem;">KA</div>
-        <div class="req-body">
-          <h4>Khmer Angkor Co., Ltd</h4>
-          <p>Hello, could you please confirm when our Q1 statements will be ready?</p>
-        </div>
-        <div style="text-align:right;">
-          <span class="status-pill pill-new" style="margin-bottom:4px; display:block;">Unread</span>
-          <div class="req-time">Today 10:32 AM</div>
-        </div>
-      </div>
-      <div class="req-item" style="cursor:pointer;" onclick="toast('Opening thread with Mekong Trading…')">
-        <div class="client-dot" style="background:#F0FDF4; color:#166534; border-radius:50%; width:38px; height:38px; font-size:0.78rem;">MT</div>
-        <div class="req-body">
-          <h4>Mekong Trading Ltd</h4>
-          <p>I've uploaded the March invoices. Please let me know if you need anything else.</p>
-        </div>
-        <div style="text-align:right;">
-          <span class="status-pill pill-new" style="margin-bottom:4px; display:block;">Unread</span>
-          <div class="req-time">Yesterday</div>
-        </div>
-      </div>
-    </div>
-
   </content>
 </div>
 
-<!-- ── Add Client Modal ── -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <h2>Add New Client</h2>
-    <div class="form-group">
-      <label>Company Name</label>
-      <input type="text" id="new-company" placeholder="e.g. Khmer Angkor Co., Ltd">
-    </div>
-    <div class="form-group">
-      <label>Short Code (for portal link)</label>
-      <input type="text" id="new-code" placeholder="e.g. kha" maxlength="8">
-    </div>
-    <div class="form-group">
-      <label>Client Email</label>
-      <input type="email" id="new-email" placeholder="client@company.com">
-    </div>
+    <div class="form-group"><label>Company Name</label><input type="text" id="new-company" placeholder="e.g. Khmer Angkor Co., Ltd"></div>
+    <div class="form-group"><label>Short Code (for portal link)</label><input type="text" id="new-code" placeholder="e.g. kha" maxlength="10"></div>
     <div class="form-group">
       <label>Services</label>
-      <select>
+      <select id="new-services">
         <option>Financial Statements + Tax</option>
         <option>Monthly Tax Filing only</option>
         <option>Full Service Package</option>
+        <option>Accounting Data Entry</option>
+        <option>Finance Law Liaison</option>
         <option>Custom</option>
       </select>
     </div>
-    <div id="generated-link" style="display:none; background:var(--gold-pale); border:1px solid var(--gold-light); border-radius:8px; padding:0.85rem 1rem; margin-top:0.5rem; font-size:0.82rem; color:var(--navy);">
+    <div id="generated-link" style="display:none; background:var(--gold-pale); border:1px solid var(--gold-light); border-radius:8px; padding:0.85rem 1rem; margin-top:0.5rem; font-size:0.82rem;">
       <strong>Portal link:</strong><br>
       <span id="link-preview" style="color:var(--gold); font-family:monospace; font-size:0.8rem;"></span>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-gold" onclick="addClient()">Create Client Portal</button>
+      <button class="btn btn-gold" id="save-btn" onclick="addClient()">Create Client Portal</button>
       <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
     </div>
   </div>
@@ -747,8 +209,8 @@
 <div class="reply-modal-overlay" id="reply-modal">
   <div class="reply-modal">
     <h3>Reply to Client</h3>
-    <p class="sub" id="reply-sub">Replying to request</p>
-    <textarea id="reply-text" placeholder="Type your reply here…"></textarea>
+    <p class="sub" id="reply-sub"></p>
+    <textarea id="reply-text" placeholder="Type your reply…"></textarea>
     <div class="reply-modal-actions">
       <button class="btn btn-gold" onclick="sendReply()">Send Reply</button>
       <button class="btn btn-outline" onclick="closeReplyModal()">Cancel</button>
@@ -756,288 +218,256 @@
   </div>
 </div>
 
-<div class="dot"></div><span id="toast-text"></span></div>
+<div class="toast" id="toast"><div class="dot"></div><span id="toast-text"></span></div>
 
 <script>
-  const BASE_URL = 'https://sseilaboramy-arch.github.io/sovatha-portal/client.html';
-  let clientCount = 0;
+const SUPABASE_URL = 'https://tvdkwsynrmngvdtlkahf.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Q90NeKhhOjjBSCjf6iKhyQ_RBDaDQDm';
+const BASE_URL = 'https://sseilaboramy-arch.github.io/sovatha-portal/client.html';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const STATUSES = [
-    { key: 'new',        label: 'New',         cls: 'pill-new',        dot: '#1E40AF' },
-    { key: 'waiting',    label: 'Waiting',      cls: 'pill-waiting',    dot: '#92400E' },
-    { key: 'inprogress', label: 'In Progress',  cls: 'pill-inprogress', dot: '#5B21B6' },
-    { key: 'delivered',  label: 'Delivered',    cls: 'pill-delivered',  dot: '#065F46' },
-    { key: 'active',     label: 'Active',       cls: 'pill-active',     dot: '#075985' },
-    { key: 'overdue',    label: 'Overdue',      cls: 'pill-overdue',    dot: '#991B1B' },
-    { key: 'inactive',   label: 'Inactive',     cls: 'pill-inactive',   dot: '#5F5E5A' },
-  ];
+const CLIENT_STATUSES = [
+  {key:'new',label:'New',cls:'pill-new',dot:'#1E40AF'},
+  {key:'waiting',label:'Waiting',cls:'pill-waiting',dot:'#92400E'},
+  {key:'inprogress',label:'In Progress',cls:'pill-inprogress',dot:'#5B21B6'},
+  {key:'delivered',label:'Delivered',cls:'pill-delivered',dot:'#065F46'},
+  {key:'active',label:'Active',cls:'pill-active',dot:'#075985'},
+  {key:'overdue',label:'Overdue',cls:'pill-overdue',dot:'#991B1B'},
+  {key:'inactive',label:'Inactive',cls:'pill-inactive',dot:'#5F5E5A'},
+];
 
-  function getStatus(key) { return STATUSES.find(s => s.key === key) || STATUSES[0]; }
+const REQ_STATUSES = [
+  {key:'new',label:'New',cls:'pill-new',dot:'#1E40AF'},
+  {key:'inprogress',label:'In Progress',cls:'pill-inprogress',dot:'#5B21B6'},
+  {key:'delivered',label:'Delivered',cls:'pill-delivered',dot:'#065F46'},
+  {key:'done',label:'Done',cls:'pill-active',dot:'#075985'},
+  {key:'cancelled',label:'Cancelled',cls:'pill-inactive',dot:'#5F5E5A'},
+];
 
-  function openStatusDropdown(pill, code) {
-    document.querySelectorAll('.status-dropdown').forEach(d => d.remove());
-    const rect = pill.getBoundingClientRect();
-    const drop = document.createElement('div');
-    drop.className = 'status-dropdown';
-    drop.style.cssText = `top:${rect.bottom + window.scrollY + 4}px; left:${rect.left + window.scrollX}px;`;
-    drop.style.position = 'absolute';
-    STATUSES.forEach(s => {
-      const opt = document.createElement('div');
-      opt.className = 'status-option';
-      opt.innerHTML = `<span class="status-dot" style="background:${s.dot}"></span>${s.label}`;
-      opt.onclick = () => {
-        pill.textContent = s.label;
-        pill.className = 'status-pill ' + s.cls;
-        pill.onclick = () => openStatusDropdown(pill, code);
-        drop.remove();
-        toast('Status updated to: ' + s.label);
-      };
-      drop.appendChild(opt);
-    });
-    document.body.appendChild(drop);
-    setTimeout(() => document.addEventListener('click', function handler(e) {
-      if (!drop.contains(e.target) && e.target !== pill) { drop.remove(); document.removeEventListener('click', handler); }
-    }), 10);
+const COLORS = [['#EFF6FF','#1E40AF'],['#F0FDF4','#166534'],['#FEF3C7','#92400E'],['#F3E8FF','#6B21A8'],['#FEF9C3','#854D0E'],['#FCE7F3','#9D174D'],['#E0F2FE','#075985'],['#ECFDF5','#065F46']];
+
+let currentFilter = 'all';
+let replyTarget = null;
+
+function navTo(el, id) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  document.getElementById('page-title').textContent = el.textContent.trim().replace(/\d+/,'').trim();
+}
+
+async function loadClients() {
+  const {data, error} = await sb.from('clients').select('*').order('created_at', {ascending:false});
+  if (error) { console.error(error); return; }
+  document.getElementById('stat-clients').textContent = data.length;
+  renderClientsTable(data);
+  renderOverviewClients(data);
+}
+
+function renderClientsTable(clients) {
+  const tbody = document.getElementById('client-tbody');
+  if (!clients.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--mid);padding:2rem;font-size:0.85rem;">No clients yet — click <strong>+ Add Client</strong> to get started.</td></tr>`;
+    return;
   }
+  tbody.innerHTML = clients.map((c,i) => {
+    const [bg,tc] = COLORS[i % COLORS.length];
+    const initials = c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const st = CLIENT_STATUSES.find(s=>s.key===c.status) || CLIENT_STATUSES[0];
+    return `<tr>
+      <td><span class="client-dot" style="background:${bg};color:${tc};">${initials}</span><strong>${c.name}</strong></td>
+      <td style="color:var(--mid);font-size:0.8rem;">${c.services||'—'}</td>
+      <td style="position:relative;"><span class="status-pill ${st.cls}" onclick="openClientStatusDrop(this,'${c.id}')">${st.label}</span></td>
+      <td><button class="copy-link" onclick="copyLink('${c.code}')">Copy Link</button></td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteClient('${c.id}','${c.name.replace(/'/g,'')}')">Delete</button></td>
+    </tr>`;
+  }).join('');
+}
 
-  document.getElementById('new-code').addEventListener('input', function() {
-    const code = this.value.toLowerCase().replace(/[^a-z0-9]/g,'');
-    this.value = code;
-    if (code) {
-      document.getElementById('generated-link').style.display = 'block';
-      document.getElementById('link-preview').textContent = BASE_URL + '?c=' + code;
-    } else {
-      document.getElementById('generated-link').style.display = 'none';
-    }
+function renderOverviewClients(clients) {
+  const el = document.getElementById('overview-clients');
+  if (!clients.length) { el.innerHTML=''; return; }
+  el.innerHTML = `<h3 style="font-size:0.9rem;font-weight:500;margin-bottom:1rem;">Your Clients</h3>` +
+    clients.slice(0,5).map((c,i)=>{
+      const [bg,tc] = COLORS[i%COLORS.length];
+      const initials = c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const st = CLIENT_STATUSES.find(s=>s.key===c.status)||CLIENT_STATUSES[0];
+      return `<div class="req-item"><span class="client-dot" style="background:${bg};color:${tc};border-radius:50%;">${initials}</span><div class="req-body"><h4>${c.name}</h4><p>${c.services||'—'}</p></div><span class="status-pill ${st.cls}">${st.label}</span></div>`;
+    }).join('');
+}
+
+document.getElementById('new-code').addEventListener('input', function() {
+  const code = this.value.toLowerCase().replace(/[^a-z0-9]/g,'');
+  this.value = code;
+  if (code) { document.getElementById('generated-link').style.display='block'; document.getElementById('link-preview').textContent=BASE_URL+'?c='+code; }
+  else document.getElementById('generated-link').style.display='none';
+});
+
+async function addClient() {
+  const name = document.getElementById('new-company').value.trim();
+  const code = document.getElementById('new-code').value.trim();
+  const services = document.getElementById('new-services').value;
+  if (!name||!code) { toast('Please fill in company name and code'); return; }
+  const btn = document.getElementById('save-btn');
+  btn.textContent='Saving…'; btn.disabled=true;
+  const {error} = await sb.from('clients').insert([{name,code,services,status:'new'}]);
+  btn.textContent='Create Client Portal'; btn.disabled=false;
+  if (error) { toast(error.code==='23505'?'Code already used — try another':'Error: '+error.message); return; }
+  closeModal();
+  document.getElementById('new-company').value='';
+  document.getElementById('new-code').value='';
+  document.getElementById('generated-link').style.display='none';
+  toast('Client saved permanently!');
+  loadClients();
+}
+
+async function deleteClient(id, name) {
+  if (!confirm('Delete '+name+'? This cannot be undone.')) return;
+  const {error} = await sb.from('clients').delete().eq('id',id);
+  if (error) { toast('Error deleting'); return; }
+  toast(name+' deleted.');
+  loadClients();
+}
+
+function openClientStatusDrop(pill, id) {
+  document.querySelectorAll('.status-dropdown').forEach(d=>d.remove());
+  const rect = pill.getBoundingClientRect();
+  const drop = document.createElement('div');
+  drop.className='status-dropdown';
+  drop.style.cssText=`top:${rect.bottom+4}px;left:${rect.left}px;`;
+  CLIENT_STATUSES.forEach(s=>{
+    const opt = document.createElement('div');
+    opt.className='status-option';
+    opt.innerHTML=`<span class="status-dot" style="background:${s.dot}"></span>${s.label}`;
+    opt.onclick=async()=>{
+      drop.remove();
+      await sb.from('clients').update({status:s.key}).eq('id',id);
+      toast('Status updated to: '+s.label);
+      loadClients();
+    };
+    drop.appendChild(opt);
   });
+  document.body.appendChild(drop);
+  setTimeout(()=>document.addEventListener('click',function h(e){if(!drop.contains(e.target)&&e.target!==pill){drop.remove();document.removeEventListener('click',h);}}),10);
+}
 
-  function navTo(el, id) {
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    el.classList.add('active');
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-' + id).classList.add('active');
-    document.getElementById('page-title').textContent = el.textContent.trim().replace(/\d+/,'').trim();
-  }
+async function loadRequests() {
+  const {data,error} = await sb.from('requests').select('*').order('created_at',{ascending:false});
+  if (error) { console.error(error); return; }
+  const newCount = data.filter(r=>r.status==='new').length;
+  const inpCount = data.filter(r=>r.status==='inprogress').length;
+  const urgCount = data.filter(r=>r.urgent).length;
+  document.getElementById('stat-new-req').textContent = newCount;
+  document.getElementById('stat-inprogress').textContent = inpCount;
+  document.getElementById('stat-urgent').textContent = urgCount;
+  const badge = document.getElementById('nav-badge-req');
+  if (newCount>0) { badge.textContent=newCount; badge.style.display='inline'; } else badge.style.display='none';
+  renderRequests(data);
+}
 
-  function openModal() { document.getElementById('modal').classList.add('open'); }
-  function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function isOverdue(d) { return d && new Date(d)<new Date(); }
+function fmtDate(d) { return d?new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''; }
 
-  document.getElementById('modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
+function renderRequests(data) {
+  const list = document.getElementById('req-list');
+  const filtered = data.filter(r=>{
+    if(currentFilter==='all') return true;
+    if(currentFilter==='urgent') return r.urgent;
+    return r.status===currentFilter;
   });
-
-  function addClient() {
-    const name = document.getElementById('new-company').value.trim();
-    const code = document.getElementById('new-code').value.trim();
-    if (!name || !code) { toast('Please fill in company name and code'); return; }
-
-    const emptyRow = document.getElementById('empty-row');
-    if (emptyRow) emptyRow.remove();
-
-    clientCount++;
-    const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const colors = [['#EFF6FF','#1E40AF'],['#F0FDF4','#166534'],['#FEF3C7','#92400E'],['#F3E8FF','#6B21A8'],['#FEF9C3','#854D0E'],['#FCE7F3','#9D174D']];
-    const [bg, tc] = colors[clientCount % colors.length];
-
-    const row = document.createElement('tr');
-    const pillId = 'pill-' + code;
-    row.innerHTML = `
-      <td>
-        <span class="client-dot" style="background:${bg}; color:${tc};">${initials}</span>
-        <strong>${name}</strong>
-      </td>
-      <td style="color:var(--mid); font-size:0.8rem;">—</td>
-      <td style="position:relative;">
-        <span id="${pillId}" class="status-pill pill-new">New</span>
-      </td>
-      <td><button class="copy-link" onclick="copyLink('${code}')">Copy Link</button></td>
-      <td><a href="#" style="color:var(--gold); font-size:0.82rem;">Open Folder ↗</a></td>
-    `;
-    document.getElementById('client-tbody').appendChild(row);
-
-    const pill = document.getElementById(pillId);
-    pill.onclick = () => openStatusDropdown(pill, code);
-
-    document.getElementById('stat-clients').textContent = clientCount;
-    closeModal();
-    document.getElementById('new-company').value = '';
-    document.getElementById('new-code').value = '';
-    document.getElementById('generated-link').style.display = 'none';
-    toast('Client added! Portal link ready to share.');
-    navTo(document.querySelectorAll('.nav-item')[1], 'clients');
+  document.getElementById('req-count').textContent = data.length+' request'+(data.length!==1?'s':'');
+  if (!filtered.length) {
+    list.innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:var(--mid);font-size:0.875rem;">${data.length===0?'No service requests yet. Clients can submit from their portal.':'No requests match this filter.'}</div>`;
+    return;
   }
-
-  function copyLink(code) {
-    const link = BASE_URL + '?c=' + code;
-    navigator.clipboard.writeText(link).then(() => toast('Link copied — send it to your client!'));
-  }
-
-  // ── Request management ────────────────────────────────────────────────────
-  const REQ_STATUSES = [
-    { key: 'new',        label: 'New',         cls: 'pill-new' },
-    { key: 'inprogress', label: 'In Progress',  cls: 'pill-inprogress' },
-    { key: 'delivered',  label: 'Delivered',    cls: 'pill-delivered' },
-    { key: 'done',       label: 'Done',         cls: 'pill-active' },
-    { key: 'cancelled',  label: 'Cancelled',    cls: 'pill-inactive' },
-  ];
-
-  let requests = [];
-  let currentFilter = 'all';
-  let replyTarget = null;
-
-  function isOverdue(deadline) {
-    if (!deadline) return false;
-    return new Date(deadline) < new Date();
-  }
-
-  function formatDeadline(deadline) {
-    if (!deadline) return '';
-    const d = new Date(deadline);
-    return d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
-  }
-
-  function renderRequests() {
-    const list = document.getElementById('req-list');
-    const empty = document.getElementById('req-empty');
-    const filtered = requests.filter(r => {
-      if (currentFilter === 'all') return true;
-      if (currentFilter === 'urgent') return r.urgent;
-      return r.status === currentFilter;
-    });
-
-    list.querySelectorAll('.req-item').forEach(el => el.remove());
-
-    if (filtered.length === 0) {
-      empty.style.display = 'block';
-      document.getElementById('req-count').textContent = requests.length + ' request' + (requests.length !== 1 ? 's' : '');
-      return;
-    }
-
-    empty.style.display = 'none';
-    document.getElementById('req-count').textContent = requests.length + ' request' + (requests.length !== 1 ? 's' : '');
-
-    filtered.forEach(r => {
-      const st = REQ_STATUSES.find(s => s.key === r.status) || REQ_STATUSES[0];
-      const overdueClass = isOverdue(r.deadline) ? 'overdue' : '';
-      const deadlineBadge = r.deadline
-        ? `<span class="deadline-badge ${overdueClass}">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            ${isOverdue(r.deadline) ? 'Overdue · ' : ''}${formatDeadline(r.deadline)}
-          </span>` : '';
-
-      const item = document.createElement('div');
-      item.className = 'req-item' + (r.urgent ? ' urgent' : '');
-      item.dataset.id = r.id;
-      item.dataset.status = r.status;
-      item.dataset.urgent = r.urgent;
-
-      item.innerHTML = `
-        <div class="req-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+  list.innerHTML = filtered.map(r=>{
+    const st = REQ_STATUSES.find(s=>s.key===r.status)||REQ_STATUSES[0];
+    const od = isOverdue(r.deadline);
+    const dl = r.deadline?`<span class="deadline-badge ${od?'overdue':''}">⏰ ${od?'Overdue · ':''}${fmtDate(r.deadline)}</span>`:'';
+    return `<div class="req-item ${r.urgent?'urgent':''}">
+      <div class="req-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <div class="req-body">
+        <h4>${r.service}</h4>
+        <p><strong>${r.client_name}</strong>${r.period?' · '+r.period:''}${r.notes?'<br>'+r.notes:''}</p>
+        <div class="req-meta">${dl}<span style="font-size:0.72rem;color:var(--mid);">${fmtDate(r.created_at)}</span></div>
+        <div class="req-actions">
+          <span class="status-pill ${st.cls}" onclick="openReqStatusDrop(this,'${r.id}')">${st.label}</span>
+          <button class="priority-btn ${r.urgent?'flagged':''}" onclick="toggleUrgent('${r.id}',${r.urgent})">⚑ ${r.urgent?'Urgent':'Flag'}</button>
+          <button class="btn btn-outline btn-sm" onclick="openReply('${r.id}','${r.service.replace(/'/g,'')}','${r.client_name.replace(/'/g,'')}')">Reply</button>
         </div>
-        <div class="req-body">
-          <h4>${r.service}</h4>
-          <p>${r.client}${r.period ? ' · ' + r.period : ''}${r.notes ? '<br><span style="margin-top:3px;display:block;">' + r.notes + '</span>' : ''}</p>
-          <div class="req-meta">
-            ${deadlineBadge}
-            <span style="font-size:0.72rem; color:var(--mid);">${r.date}</span>
-          </div>
-          <div class="req-actions">
-            <span class="status-pill ${st.cls}" style="cursor:pointer;" onclick="openReqStatusDrop(this, '${r.id}')">${st.label}</span>
-            <button class="priority-btn ${r.urgent ? 'flagged' : ''}" onclick="toggleUrgent('${r.id}', this)" title="Mark urgent">
-              &#9873; ${r.urgent ? 'Urgent' : 'Flag'}
-            </button>
-            <button class="btn btn-outline btn-sm" onclick="openReply('${r.id}')">Reply</button>
-          </div>
-        </div>
-      `;
-      list.appendChild(item);
-    });
-  }
+      </div>
+    </div>`;
+  }).join('');
+}
 
-  function openReqStatusDrop(pill, id) {
-    document.querySelectorAll('.status-dropdown').forEach(d => d.remove());
-    const rect = pill.getBoundingClientRect();
-    const drop = document.createElement('div');
-    drop.className = 'status-dropdown';
-    drop.style.cssText = `position:absolute; top:${rect.bottom + window.scrollY + 4}px; left:${rect.left + window.scrollX}px;`;
-    REQ_STATUSES.forEach(s => {
-      const opt = document.createElement('div');
-      opt.className = 'status-option';
-      opt.innerHTML = `<span class="status-dot" style="background:#888"></span>${s.label}`;
-      opt.onclick = () => {
-        const req = requests.find(r => r.id === id);
-        if (req) { req.status = s.key; renderRequests(); toast('Status updated to: ' + s.label); }
-        drop.remove();
-      };
-      drop.appendChild(opt);
-    });
-    document.body.appendChild(drop);
-    setTimeout(() => document.addEventListener('click', function h(e) {
-      if (!drop.contains(e.target) && e.target !== pill) { drop.remove(); document.removeEventListener('click', h); }
-    }), 10);
-  }
+function filterReqs(btn, filter) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter=filter;
+  loadRequests();
+}
 
-  function toggleUrgent(id, btn) {
-    const req = requests.find(r => r.id === id);
-    if (!req) return;
-    req.urgent = !req.urgent;
-    renderRequests();
-    toast(req.urgent ? 'Marked as urgent' : 'Urgent flag removed');
-  }
-
-  function openReply(id) {
-    const req = requests.find(r => r.id === id);
-    if (!req) return;
-    replyTarget = req;
-    document.getElementById('reply-sub').textContent = req.service + ' — ' + req.client;
-    document.getElementById('reply-text').value = '';
-    document.getElementById('reply-modal').classList.add('open');
-  }
-
-  function closeReplyModal() {
-    document.getElementById('reply-modal').classList.remove('open');
-    replyTarget = null;
-  }
-
-  function sendReply() {
-    const text = document.getElementById('reply-text').value.trim();
-    if (!text) { toast('Please type a reply first'); return; }
-    closeReplyModal();
-    toast('Reply sent to ' + (replyTarget ? replyTarget.client : 'client'));
-  }
-
-  document.getElementById('reply-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeReplyModal();
+function openReqStatusDrop(pill, id) {
+  document.querySelectorAll('.status-dropdown').forEach(d=>d.remove());
+  const rect=pill.getBoundingClientRect();
+  const drop=document.createElement('div');
+  drop.className='status-dropdown';
+  drop.style.cssText=`top:${rect.bottom+4}px;left:${rect.left}px;`;
+  REQ_STATUSES.forEach(s=>{
+    const opt=document.createElement('div');
+    opt.className='status-option';
+    opt.innerHTML=`<span class="status-dot" style="background:${s.dot}"></span>${s.label}`;
+    opt.onclick=async()=>{ drop.remove(); await sb.from('requests').update({status:s.key}).eq('id',id); toast('Updated to: '+s.label); loadRequests(); };
+    drop.appendChild(opt);
   });
+  document.body.appendChild(drop);
+  setTimeout(()=>document.addEventListener('click',function h(e){if(!drop.contains(e.target)&&e.target!==pill){drop.remove();document.removeEventListener('click',h);}}),10);
+}
 
-  function filterReqs(btn, filter) {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentFilter = filter;
-    renderRequests();
-  }
+async function toggleUrgent(id, current) {
+  await sb.from('requests').update({urgent:!current}).eq('id',id);
+  toast(!current?'Marked as urgent':'Flag removed');
+  loadRequests();
+}
 
-  function addDemoRequest() {
-    const demos = [
-      { service: 'Financial Statement Preparation', client: 'Khmer Angkor Co. Ltd', period: 'Q1 2025', deadline: '2025-05-20', notes: 'Please prepare as per CIFRS format.' },
-      { service: 'Monthly Tax Filing', client: 'Koh Ker Co. Ltd', period: 'April 2025', deadline: '2025-05-15', notes: '' },
-    ];
-    demos.forEach((d, i) => {
-      requests.push({ id: 'req' + Date.now() + i, ...d, status: 'new', urgent: false, date: 'Today' });
-    });
-    renderRequests();
-    document.getElementById('nav-badge-req').textContent = requests.length;
-  }
+function openReply(id, service, client) {
+  replyTarget={id,service,client};
+  document.getElementById('reply-sub').textContent=service+' — '+client;
+  document.getElementById('reply-text').value='';
+  document.getElementById('reply-modal').classList.add('open');
+}
+function closeReplyModal() { document.getElementById('reply-modal').classList.remove('open'); replyTarget=null; }
+function sendReply() {
+  const text=document.getElementById('reply-text').value.trim();
+  if (!text) { toast('Please type a reply'); return; }
+  closeReplyModal();
+  toast('Reply sent to '+(replyTarget?replyTarget.client:'client'));
+}
+document.getElementById('reply-modal').addEventListener('click',function(e){if(e.target===this)closeReplyModal();});
 
-  renderRequests();
+function openModal() { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 
-  function toast(msg) {
-    const t = document.getElementById('toast');
-    document.getElementById('toast-text').textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3500);
-  }
+function copyLink(code) {
+  navigator.clipboard.writeText(BASE_URL+'?c='+code).then(()=>toast('Link copied — send to your client!'));
+}
+
+function toast(msg) {
+  const t=document.getElementById('toast');
+  document.getElementById('toast-text').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+sb.channel('portal').on('postgres_changes',{event:'INSERT',schema:'public',table:'requests'},payload=>{
+  toast('New request from '+payload.new.client_name+'!');
+  loadRequests();
+}).subscribe();
+
+loadClients();
+loadRequests();
 </script>
 </body>
 </html>
