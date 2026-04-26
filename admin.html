@@ -222,7 +222,7 @@
 
 <script>
 const SUPABASE_URL = 'https://tvdkwsynrmngvdtlkahf.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_Q90NeKhhOjjBSCjf6iKhyQ_RBDaDQDm';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2ZGt3c3lucm1uZ3ZkdGxrYWhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyMDY4NzIsImV4cCI6MjA5Mjc4Mjg3Mn0.Kz_adEg0TuOdHJmULpgMu6_IUzd1nKwFcQVEx80Jzac';
 const BASE_URL = 'https://sseilaboramy-arch.github.io/sovatha-portal/client.html';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -261,6 +261,8 @@ async function loadClients() {
   const {data, error} = await sb.from('clients').select('*').order('created_at', {ascending:false});
   if (error) { console.error(error); return; }
   document.getElementById('stat-clients').textContent = data.length;
+  const inpCount = data.filter(c=>c.status==='inprogress').length;
+  document.getElementById('stat-inprogress').textContent = inpCount;
   renderClientsTable(data);
   renderOverviewClients(data);
 }
@@ -356,10 +358,8 @@ async function loadRequests() {
   const {data,error} = await sb.from('requests').select('*').order('created_at',{ascending:false});
   if (error) { console.error(error); return; }
   const newCount = data.filter(r=>r.status==='new').length;
-  const inpCount = data.filter(r=>r.status==='inprogress').length;
   const urgCount = data.filter(r=>r.urgent).length;
   document.getElementById('stat-new-req').textContent = newCount;
-  document.getElementById('stat-inprogress').textContent = inpCount;
   document.getElementById('stat-urgent').textContent = urgCount;
   const badge = document.getElementById('nav-badge-req');
   if (newCount>0) { badge.textContent=newCount; badge.style.display='inline'; } else badge.style.display='none';
