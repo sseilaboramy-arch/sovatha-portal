@@ -363,7 +363,11 @@
     display: flex;
     align-items: flex-start;
     gap: 14px;
+    transition: border-color 0.2s;
   }
+
+  .req-item.urgent { border-left: 3px solid #E53E3E; }
+  .req-item.hidden { display: none; }
 
   .req-icon {
     width: 38px; height: 38px;
@@ -375,10 +379,119 @@
     flex-shrink: 0;
   }
 
-  .req-body { flex: 1; }
-  .req-body h4 { font-size: 0.88rem; font-weight: 500; margin-bottom: 3px; }
-  .req-body p { font-size: 0.8rem; color: var(--mid); }
+  .req-body { flex: 1; min-width: 0; }
+  .req-body h4 { font-size: 0.88rem; font-weight: 500; margin-bottom: 4px; }
+  .req-body p { font-size: 0.8rem; color: var(--mid); line-height: 1.5; }
   .req-time { font-size: 0.75rem; color: var(--mid); white-space: nowrap; }
+
+  .req-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .deadline-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: #FEF3C7;
+    color: #92400E;
+  }
+
+  .deadline-badge.overdue { background: #FEE2E2; color: #991B1B; }
+
+  .priority-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: var(--mid);
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .priority-btn:hover { background: #FEE2E2; color: #991B1B; }
+  .priority-btn.flagged { color: #E53E3E; }
+
+  .filter-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--mid);
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .filter-btn:hover { border-color: var(--gold); color: var(--navy); }
+  .filter-btn.active { background: var(--navy); color: var(--white); border-color: var(--navy); }
+
+  .req-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+
+  .reply-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .reply-modal-overlay.open { display: flex; }
+
+  .reply-modal {
+    background: var(--white);
+    border-radius: 14px;
+    padding: 1.75rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: modalIn 0.2s ease;
+  }
+
+  .reply-modal h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .reply-modal .sub { font-size: 0.8rem; color: var(--mid); margin-bottom: 1.25rem; }
+
+  .reply-modal textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    color: var(--navy);
+    resize: vertical;
+    min-height: 110px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .reply-modal textarea:focus { border-color: var(--gold); }
+  .reply-modal-actions { display: flex; gap: 10px; margin-top: 1rem; }
 
   /* ── Toast ── */
   .toast {
@@ -426,7 +539,7 @@
     <div class="nav-item" onclick="navTo(this,'requests')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       Service Requests
-      <span class="nav-badge">3</span>
+      <span id="nav-badge-req" class="nav-badge">0</span>
     </div>
     <div class="nav-item" onclick="navTo(this,'messages')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
@@ -545,29 +658,22 @@
 
     <!-- ── REQUESTS ── -->
     <div id="panel-requests" class="panel">
-      <h3 style="font-size:0.9rem; font-weight:500; margin-bottom:1rem;">All Service Requests</h3>
-      <div class="req-item">
-        <div class="req-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/></svg></div>
-        <div class="req-body">
-          <h4>Financial Statement Preparation</h4>
-          <p>Khmer Angkor Co., Ltd · Q1 2025 · Deadline: 20 May 2025<br><span style="margin-top:4px;display:block;">Note: Please prepare balance sheet and income statement as per CIFRS format.</span></p>
-        </div>
-        <div style="text-align:right;">
-          <span class="status-pill pill-new">New</span>
-          <div class="req-time" style="margin-top:6px;">Today 9:14 AM</div>
-          <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="toast('Marked as in progress')">Start</button>
-        </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+        <h3 style="font-size:0.9rem; font-weight:500;">Service Requests</h3>
+        <span id="req-count" style="font-size:0.78rem; color:var(--mid);">0 requests</span>
       </div>
-      <div class="req-item">
-        <div class="req-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></div>
-        <div class="req-body">
-          <h4>Monthly Tax Filing — March 2025</h4>
-          <p>Mekong Trading Ltd · VAT, Salary Tax, WHT · No special notes.</p>
-        </div>
-        <div style="text-align:right;">
-          <span class="status-pill pill-pending">In Progress</span>
-          <div class="req-time" style="margin-top:6px;">Yesterday</div>
-          <button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="toast('Marked as done ✓')">Mark Done</button>
+
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterReqs(this,'all')">All</button>
+        <button class="filter-btn" onclick="filterReqs(this,'new')">New</button>
+        <button class="filter-btn" onclick="filterReqs(this,'inprogress')">In Progress</button>
+        <button class="filter-btn" onclick="filterReqs(this,'delivered')">Delivered</button>
+        <button class="filter-btn" onclick="filterReqs(this,'urgent')">Urgent</button>
+      </div>
+
+      <div id="req-list">
+        <div id="req-empty" style="text-align:center; padding:3rem 1rem; color:var(--mid); font-size:0.875rem;">
+          No service requests yet. Clients can submit requests from their portal.
         </div>
       </div>
     </div>
@@ -638,7 +744,19 @@
   </div>
 </div>
 
-<div class="toast" id="toast"><div class="dot"></div><span id="toast-text"></span></div>
+<div class="reply-modal-overlay" id="reply-modal">
+  <div class="reply-modal">
+    <h3>Reply to Client</h3>
+    <p class="sub" id="reply-sub">Replying to request</p>
+    <textarea id="reply-text" placeholder="Type your reply here…"></textarea>
+    <div class="reply-modal-actions">
+      <button class="btn btn-gold" onclick="sendReply()">Send Reply</button>
+      <button class="btn btn-outline" onclick="closeReplyModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="dot"></div><span id="toast-text"></span></div>
 
 <script>
   const BASE_URL = 'https://sseilaboramy-arch.github.io/sovatha-portal/client.html';
@@ -753,6 +871,166 @@
     const link = BASE_URL + '?c=' + code;
     navigator.clipboard.writeText(link).then(() => toast('Link copied — send it to your client!'));
   }
+
+  // ── Request management ────────────────────────────────────────────────────
+  const REQ_STATUSES = [
+    { key: 'new',        label: 'New',         cls: 'pill-new' },
+    { key: 'inprogress', label: 'In Progress',  cls: 'pill-inprogress' },
+    { key: 'delivered',  label: 'Delivered',    cls: 'pill-delivered' },
+    { key: 'done',       label: 'Done',         cls: 'pill-active' },
+    { key: 'cancelled',  label: 'Cancelled',    cls: 'pill-inactive' },
+  ];
+
+  let requests = [];
+  let currentFilter = 'all';
+  let replyTarget = null;
+
+  function isOverdue(deadline) {
+    if (!deadline) return false;
+    return new Date(deadline) < new Date();
+  }
+
+  function formatDeadline(deadline) {
+    if (!deadline) return '';
+    const d = new Date(deadline);
+    return d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  }
+
+  function renderRequests() {
+    const list = document.getElementById('req-list');
+    const empty = document.getElementById('req-empty');
+    const filtered = requests.filter(r => {
+      if (currentFilter === 'all') return true;
+      if (currentFilter === 'urgent') return r.urgent;
+      return r.status === currentFilter;
+    });
+
+    list.querySelectorAll('.req-item').forEach(el => el.remove());
+
+    if (filtered.length === 0) {
+      empty.style.display = 'block';
+      document.getElementById('req-count').textContent = requests.length + ' request' + (requests.length !== 1 ? 's' : '');
+      return;
+    }
+
+    empty.style.display = 'none';
+    document.getElementById('req-count').textContent = requests.length + ' request' + (requests.length !== 1 ? 's' : '');
+
+    filtered.forEach(r => {
+      const st = REQ_STATUSES.find(s => s.key === r.status) || REQ_STATUSES[0];
+      const overdueClass = isOverdue(r.deadline) ? 'overdue' : '';
+      const deadlineBadge = r.deadline
+        ? `<span class="deadline-badge ${overdueClass}">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${isOverdue(r.deadline) ? 'Overdue · ' : ''}${formatDeadline(r.deadline)}
+          </span>` : '';
+
+      const item = document.createElement('div');
+      item.className = 'req-item' + (r.urgent ? ' urgent' : '');
+      item.dataset.id = r.id;
+      item.dataset.status = r.status;
+      item.dataset.urgent = r.urgent;
+
+      item.innerHTML = `
+        <div class="req-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="req-body">
+          <h4>${r.service}</h4>
+          <p>${r.client}${r.period ? ' · ' + r.period : ''}${r.notes ? '<br><span style="margin-top:3px;display:block;">' + r.notes + '</span>' : ''}</p>
+          <div class="req-meta">
+            ${deadlineBadge}
+            <span style="font-size:0.72rem; color:var(--mid);">${r.date}</span>
+          </div>
+          <div class="req-actions">
+            <span class="status-pill ${st.cls}" style="cursor:pointer;" onclick="openReqStatusDrop(this, '${r.id}')">${st.label}</span>
+            <button class="priority-btn ${r.urgent ? 'flagged' : ''}" onclick="toggleUrgent('${r.id}', this)" title="Mark urgent">
+              &#9873; ${r.urgent ? 'Urgent' : 'Flag'}
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="openReply('${r.id}')">Reply</button>
+          </div>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  function openReqStatusDrop(pill, id) {
+    document.querySelectorAll('.status-dropdown').forEach(d => d.remove());
+    const rect = pill.getBoundingClientRect();
+    const drop = document.createElement('div');
+    drop.className = 'status-dropdown';
+    drop.style.cssText = `position:absolute; top:${rect.bottom + window.scrollY + 4}px; left:${rect.left + window.scrollX}px;`;
+    REQ_STATUSES.forEach(s => {
+      const opt = document.createElement('div');
+      opt.className = 'status-option';
+      opt.innerHTML = `<span class="status-dot" style="background:#888"></span>${s.label}`;
+      opt.onclick = () => {
+        const req = requests.find(r => r.id === id);
+        if (req) { req.status = s.key; renderRequests(); toast('Status updated to: ' + s.label); }
+        drop.remove();
+      };
+      drop.appendChild(opt);
+    });
+    document.body.appendChild(drop);
+    setTimeout(() => document.addEventListener('click', function h(e) {
+      if (!drop.contains(e.target) && e.target !== pill) { drop.remove(); document.removeEventListener('click', h); }
+    }), 10);
+  }
+
+  function toggleUrgent(id, btn) {
+    const req = requests.find(r => r.id === id);
+    if (!req) return;
+    req.urgent = !req.urgent;
+    renderRequests();
+    toast(req.urgent ? 'Marked as urgent' : 'Urgent flag removed');
+  }
+
+  function openReply(id) {
+    const req = requests.find(r => r.id === id);
+    if (!req) return;
+    replyTarget = req;
+    document.getElementById('reply-sub').textContent = req.service + ' — ' + req.client;
+    document.getElementById('reply-text').value = '';
+    document.getElementById('reply-modal').classList.add('open');
+  }
+
+  function closeReplyModal() {
+    document.getElementById('reply-modal').classList.remove('open');
+    replyTarget = null;
+  }
+
+  function sendReply() {
+    const text = document.getElementById('reply-text').value.trim();
+    if (!text) { toast('Please type a reply first'); return; }
+    closeReplyModal();
+    toast('Reply sent to ' + (replyTarget ? replyTarget.client : 'client'));
+  }
+
+  document.getElementById('reply-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeReplyModal();
+  });
+
+  function filterReqs(btn, filter) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = filter;
+    renderRequests();
+  }
+
+  function addDemoRequest() {
+    const demos = [
+      { service: 'Financial Statement Preparation', client: 'Khmer Angkor Co. Ltd', period: 'Q1 2025', deadline: '2025-05-20', notes: 'Please prepare as per CIFRS format.' },
+      { service: 'Monthly Tax Filing', client: 'Koh Ker Co. Ltd', period: 'April 2025', deadline: '2025-05-15', notes: '' },
+    ];
+    demos.forEach((d, i) => {
+      requests.push({ id: 'req' + Date.now() + i, ...d, status: 'new', urgent: false, date: 'Today' });
+    });
+    renderRequests();
+    document.getElementById('nav-badge-req').textContent = requests.length;
+  }
+
+  renderRequests();
 
   function toast(msg) {
     const t = document.getElementById('toast');
