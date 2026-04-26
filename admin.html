@@ -242,9 +242,44 @@
     border-radius: 20px;
   }
 
-  .pill-active { background: #D1FAE5; color: #065F46; }
-  .pill-pending { background: #FEF3C7; color: #92400E; }
-  .pill-new { background: #DBEAFE; color: #1E40AF; }
+  .pill-new        { background: #DBEAFE; color: #1E40AF; }
+  .pill-waiting    { background: #FEF3C7; color: #92400E; }
+  .pill-inprogress { background: #EDE9FE; color: #5B21B6; }
+  .pill-delivered  { background: #D1FAE5; color: #065F46; }
+  .pill-active     { background: #E0F2FE; color: #075985; }
+  .pill-overdue    { background: #FEE2E2; color: #991B1B; }
+  .pill-inactive   { background: #F1EFE8; color: #5F5E5A; }
+
+  .status-pill { cursor: pointer; user-select: none; }
+  .status-pill:hover { opacity: 0.8; }
+
+  .status-dropdown {
+    position: absolute;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 100;
+    min-width: 150px;
+    overflow: hidden;
+    animation: fadeIn 0.15s ease;
+  }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } }
+
+  .status-option {
+    padding: 0.6rem 1rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s;
+  }
+
+  .status-option:hover { background: var(--cream); }
+
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
   .copy-link {
     background: var(--gold-pale);
@@ -498,35 +533,10 @@
             </tr>
           </thead>
           <tbody id="client-tbody">
-            <tr>
-              <td>
-                <span class="client-dot" style="background:#EFF6FF; color:#1E40AF;">KA</span>
-                <strong>Khmer Angkor Co., Ltd</strong>
+            <tr id="empty-row">
+              <td colspan="5" style="text-align:center; color:var(--mid); padding:2rem; font-size:0.85rem;">
+                No clients yet — click <strong>+ Add Client</strong> to get started.
               </td>
-              <td style="color:var(--mid); font-size:0.8rem;">Financial, Tax, Bookkeeping</td>
-              <td><span class="status-pill pill-active">Active</span></td>
-              <td><button class="copy-link" onclick="copyLink('kha')">Copy Link</button></td>
-              <td><a href="#" style="color:var(--gold); font-size:0.82rem;">Open Folder ↗</a></td>
-            </tr>
-            <tr>
-              <td>
-                <span class="client-dot" style="background:#F0FDF4; color:#166534;">MT</span>
-                <strong>Mekong Trading Ltd</strong>
-              </td>
-              <td style="color:var(--mid); font-size:0.8rem;">Monthly Tax Filing</td>
-              <td><span class="status-pill pill-pending">Pending</span></td>
-              <td><button class="copy-link" onclick="copyLink('mtl')">Copy Link</button></td>
-              <td><a href="#" style="color:var(--gold); font-size:0.82rem;">Open Folder ↗</a></td>
-            </tr>
-            <tr>
-              <td>
-                <span class="client-dot" style="background:#FEF3C7; color:#92400E;">PP</span>
-                <strong>Phnom Penh Holdings</strong>
-              </td>
-              <td style="color:var(--mid); font-size:0.8rem;">Full service package</td>
-              <td><span class="status-pill pill-active">Active</span></td>
-              <td><button class="copy-link" onclick="copyLink('pph')">Copy Link</button></td>
-              <td><a href="#" style="color:var(--gold); font-size:0.82rem;">Open Folder ↗</a></td>
             </tr>
           </tbody>
         </table>
@@ -632,7 +642,45 @@
 
 <script>
   const BASE_URL = 'https://sseilaboramy-arch.github.io/sovatha-portal/client.html';
-  let clientCount = 4;
+  let clientCount = 0;
+
+  const STATUSES = [
+    { key: 'new',        label: 'New',         cls: 'pill-new',        dot: '#1E40AF' },
+    { key: 'waiting',    label: 'Waiting',      cls: 'pill-waiting',    dot: '#92400E' },
+    { key: 'inprogress', label: 'In Progress',  cls: 'pill-inprogress', dot: '#5B21B6' },
+    { key: 'delivered',  label: 'Delivered',    cls: 'pill-delivered',  dot: '#065F46' },
+    { key: 'active',     label: 'Active',       cls: 'pill-active',     dot: '#075985' },
+    { key: 'overdue',    label: 'Overdue',      cls: 'pill-overdue',    dot: '#991B1B' },
+    { key: 'inactive',   label: 'Inactive',     cls: 'pill-inactive',   dot: '#5F5E5A' },
+  ];
+
+  function getStatus(key) { return STATUSES.find(s => s.key === key) || STATUSES[0]; }
+
+  function openStatusDropdown(pill, code) {
+    document.querySelectorAll('.status-dropdown').forEach(d => d.remove());
+    const rect = pill.getBoundingClientRect();
+    const drop = document.createElement('div');
+    drop.className = 'status-dropdown';
+    drop.style.cssText = `top:${rect.bottom + window.scrollY + 4}px; left:${rect.left + window.scrollX}px;`;
+    drop.style.position = 'absolute';
+    STATUSES.forEach(s => {
+      const opt = document.createElement('div');
+      opt.className = 'status-option';
+      opt.innerHTML = `<span class="status-dot" style="background:${s.dot}"></span>${s.label}`;
+      opt.onclick = () => {
+        pill.textContent = s.label;
+        pill.className = 'status-pill ' + s.cls;
+        pill.onclick = () => openStatusDropdown(pill, code);
+        drop.remove();
+        toast('Status updated to: ' + s.label);
+      };
+      drop.appendChild(opt);
+    });
+    document.body.appendChild(drop);
+    setTimeout(() => document.addEventListener('click', function handler(e) {
+      if (!drop.contains(e.target) && e.target !== pill) { drop.remove(); document.removeEventListener('click', handler); }
+    }), 10);
+  }
 
   document.getElementById('new-code').addEventListener('input', function() {
     const code = this.value.toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -665,31 +713,40 @@
     const code = document.getElementById('new-code').value.trim();
     if (!name || !code) { toast('Please fill in company name and code'); return; }
 
+    const emptyRow = document.getElementById('empty-row');
+    if (emptyRow) emptyRow.remove();
+
     clientCount++;
     const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const colors = [['#EFF6FF','#1E40AF'],['#F0FDF4','#166534'],['#FEF3C7','#92400E'],['#F3E8FF','#6B21A8']];
+    const colors = [['#EFF6FF','#1E40AF'],['#F0FDF4','#166534'],['#FEF3C7','#92400E'],['#F3E8FF','#6B21A8'],['#FEF9C3','#854D0E'],['#FCE7F3','#9D174D']];
     const [bg, tc] = colors[clientCount % colors.length];
 
     const row = document.createElement('tr');
+    const pillId = 'pill-' + code;
     row.innerHTML = `
       <td>
         <span class="client-dot" style="background:${bg}; color:${tc};">${initials}</span>
         <strong>${name}</strong>
       </td>
       <td style="color:var(--mid); font-size:0.8rem;">—</td>
-      <td><span class="status-pill pill-new">New</span></td>
+      <td style="position:relative;">
+        <span id="${pillId}" class="status-pill pill-new">New</span>
+      </td>
       <td><button class="copy-link" onclick="copyLink('${code}')">Copy Link</button></td>
       <td><a href="#" style="color:var(--gold); font-size:0.82rem;">Open Folder ↗</a></td>
     `;
     document.getElementById('client-tbody').appendChild(row);
-    document.getElementById('stat-clients').textContent = clientCount;
 
+    const pill = document.getElementById(pillId);
+    pill.onclick = () => openStatusDropdown(pill, code);
+
+    document.getElementById('stat-clients').textContent = clientCount;
     closeModal();
     document.getElementById('new-company').value = '';
     document.getElementById('new-code').value = '';
     document.getElementById('generated-link').style.display = 'none';
     toast('Client added! Portal link ready to share.');
-    navTo(document.querySelector('.nav-item:nth-child(2)'), 'clients');
+    navTo(document.querySelectorAll('.nav-item')[1], 'clients');
   }
 
   function copyLink(code) {
