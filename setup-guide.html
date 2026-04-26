@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Setup Guide — SOVATHA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --navy:#0D1F3C; --gold:#B8965A; --gold-pale:#FAF5EC; --gold-light:#E8D5B0; --cream:#F8F6F1; --mid:#6B7280; --border:#E5DDD0; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--navy); padding:2rem; max-width:720px; margin:0 auto; }
+  h1 { font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:500; margin-bottom:0.25rem; }
+  .sub { color:var(--mid); font-size:0.875rem; margin-bottom:2rem; }
+  .step { background:#fff; border:1px solid var(--border); border-radius:10px; padding:1.5rem; margin-bottom:1rem; }
+  .step-num { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:var(--navy); color:#fff; font-size:0.8rem; font-weight:500; margin-right:10px; }
+  .step h3 { font-size:1rem; font-weight:500; display:flex; align-items:center; margin-bottom:0.75rem; }
+  .step p { font-size:0.875rem; line-height:1.65; color:#374151; }
+  code { background:var(--gold-pale); border:1px solid var(--gold-light); padding:2px 7px; border-radius:4px; font-size:0.82rem; font-family:monospace; color:var(--navy); }
+  pre { background:var(--navy); color:#E8D5B0; padding:1.1rem; border-radius:8px; font-size:0.8rem; margin:0.75rem 0; overflow-x:auto; line-height:1.6; }
+  .tip { background:var(--gold-pale); border-left:3px solid var(--gold); padding:0.75rem 1rem; border-radius:0 6px 6px 0; font-size:0.82rem; color:#7A6030; margin-top:0.75rem; }
+  a { color:var(--gold); }
+</style>
+</head>
+<body>
+
+<h1>Portal Setup Guide</h1>
+<p class="sub">How to deploy your SOVATHA client portal online — step by step.</p>
+
+<div class="step">
+  <h3><span class="step-num">1</span> What you have</h3>
+  <p>Three files in your portal folder:</p>
+  <ul style="margin:0.75rem 0 0 1.25rem; font-size:0.875rem; line-height:2;">
+    <li><code>client.html</code> — what your clients see (upload, download, requests, messages)</li>
+    <li><code>admin.html</code> — your private dashboard to manage all clients</li>
+    <li><code>setup-guide.html</code> — this file</li>
+  </ul>
+</div>
+
+<div class="step">
+  <h3><span class="step-num">2</span> Host it free on GitHub Pages (recommended)</h3>
+  <p>GitHub Pages hosts static HTML files for free with a real URL. No coding experience needed.</p>
+  <ol style="margin:0.75rem 0 0 1.25rem; font-size:0.875rem; line-height:2.2;">
+    <li>Go to <a href="https://github.com" target="_blank">github.com</a> and create a free account</li>
+    <li>Click <strong>+ New repository</strong> → name it <code>sovatha-portal</code> → set to <strong>Private</strong></li>
+    <li>Upload your three HTML files to the repo</li>
+    <li>Go to <strong>Settings → Pages → Source</strong> → select <strong>main branch</strong> → Save</li>
+    <li>Your portal is live at: <code>https://yourusername.github.io/sovatha-portal/client.html</code></li>
+  </ol>
+  <div class="tip">The repository is private so strangers can't find it, but the Pages URL works for anyone with the link — perfect for sharing with clients.</div>
+</div>
+
+<div class="step">
+  <h3><span class="step-num">3</span> Generate client links</h3>
+  <p>Each client gets a unique link based on a short code you assign them. Open your <code>admin.html</code>, click <strong>Add Client</strong>, enter their company name and a short code.</p>
+  <p style="margin-top:0.75rem;">The link format is:</p>
+  <pre>https://yourusername.github.io/sovatha-portal/client.html?c=CLIENTCODE</pre>
+  <p>For example, for Khmer Angkor (<code>kha</code>):</p>
+  <pre>https://yourusername.github.io/sovatha-portal/client.html?c=kha</pre>
+  <div class="tip">Send this link to your client via Telegram, email, or WhatsApp. They bookmark it and use it every time.</div>
+</div>
+
+<div class="step">
+  <h3><span class="step-num">4</span> Connect to Google Drive (for real file uploads)</h3>
+  <p>Right now, uploads show in the portal UI but don't go anywhere. To connect to your real Google Drive, create a Google Apps Script Web App:</p>
+  <ol style="margin:0.75rem 0 0 1.25rem; font-size:0.875rem; line-height:2.2;">
+    <li>Go to <a href="https://script.google.com" target="_blank">script.google.com</a> → New project</li>
+    <li>Paste the Apps Script code (see below)</li>
+    <li>Deploy as Web App → Anyone can access → Copy the URL</li>
+    <li>Paste the URL into <code>client.html</code> where it says <code>YOUR_APPS_SCRIPT_URL</code></li>
+  </ol>
+  <pre>function doPost(e) {
+  var data = JSON.parse(e.postData.contents);
+  var clientCode = data.clientCode;
+  var fileName = data.fileName;
+  var fileData = data.fileData; // base64
+  
+  // Find the client's folder in Google Drive
+  var parentId = "YOUR_MAIN_FOLDER_ID";
+  var parent = DriveApp.getFolderById(parentId);
+  var folders = parent.getFoldersByName(clientCode);
+  
+  var folder = folders.hasNext()
+    ? folders.next()
+    : parent.createFolder(clientCode);
+  
+  // Save the file
+  var blob = Utilities.newBlob(
+    Utilities.base64Decode(fileData), 
+    data.mimeType, 
+    fileName
+  );
+  folder.createFile(blob);
+  
+  // Email notification to you
+  MailApp.sendEmail(
+    "sovatha@consulting.com",
+    "New file uploaded — " + clientCode,
+    fileName + " was uploaded by " + clientCode
+  );
+  
+  return ContentService.createTextOutput(
+    JSON.stringify({success: true})
+  ).setMimeType(ContentService.MimeType.JSON);
+}</pre>
+</div>
+
+<div class="step">
+  <h3><span class="step-num">5</span> Keep your admin dashboard private</h3>
+  <p>The <code>admin.html</code> file is for you only. Never share the admin link with clients. To add a password, you can use a free service like <a href="https://www.netlify.com" target="_blank">Netlify</a> which supports password-protected pages, or simply keep the admin file locally on your computer and open it directly in your browser — it doesn't need to be hosted online to work.</p>
+</div>
+
+<div class="step">
+  <h3><span class="step-num">6</span> Optional: custom domain</h3>
+  <p>If you want a professional URL like <code>portal.sovatha.com</code> instead of a GitHub URL, you can:</p>
+  <ul style="margin:0.75rem 0 0 1.25rem; font-size:0.875rem; line-height:2.2;">
+    <li>Buy a domain from <a href="https://www.namecheap.com" target="_blank">Namecheap</a> (~$10/year)</li>
+    <li>Point it to your GitHub Pages site in the DNS settings</li>
+    <li>GitHub Pages supports custom domains for free</li>
+  </ul>
+</div>
+
+</body>
+</html>
