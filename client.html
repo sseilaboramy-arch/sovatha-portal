@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
+<!-- saved from url=(0046)file:///C:/Users/sokhe/Downloads/client_1.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SOVATHA — Client Portal</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="./client_files/css2" rel="stylesheet">
+<script src="./client_files/supabase-js@2"></script>
 <style>
   :root {
     --navy:#0D1F3C; --gold:#B8965A; --gold-light:#E8D5B0; --gold-pale:#FAF5EC;
@@ -148,24 +148,24 @@
 
 <header>
   <div class="logo">SOVATHA <span>—</span> Client Portal</div>
-  <div class="client-badge"><div class="dot"></div><span id="client-name-header">Loading…</span></div>
+  <div class="client-badge"><div class="dot"></div><span id="client-name-header">demo</span></div>
 </header>
 
 <div class="hero">
   <div class="hero-inner">
     <div class="welcome-label">Secure Client Portal</div>
-    <h1 id="hero-greeting">Welcome</h1>
+    <h1 id="hero-greeting">Welcome, demo</h1>
     <p id="hero-sub">Upload documents, download completed work, submit requests, and message SOVATHA directly.</p>
   </div>
 </div>
 
 <div class="tabs-wrap">
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('upload')">Upload Documents</div>
-    <div class="tab" onclick="switchTab('requests')">Document Requests <span class="tab-badge" id="doc-req-badge" style="display:none">0</span></div>
-    <div class="tab" onclick="switchTab('download')">My Files</div>
-    <div class="tab" onclick="switchTab('service')">Service Request</div>
-    <div class="tab" onclick="switchTab('messages')">Messages <span class="tab-badge" id="msg-badge" style="display:none">0</span></div>
+    <div class="tab active" onclick="switchTab(&#39;upload&#39;)">Upload Documents</div>
+    <div class="tab" onclick="switchTab(&#39;requests&#39;)">Document Requests <span class="tab-badge" id="doc-req-badge" style="display:none">0</span></div>
+    <div class="tab" onclick="switchTab(&#39;download&#39;)">My Files</div>
+    <div class="tab" onclick="switchTab(&#39;service&#39;)">Service Request</div>
+    <div class="tab" onclick="switchTab(&#39;messages&#39;)">Messages <span class="tab-badge" id="msg-badge" style="display:none">0</span></div>
   </div>
 </div>
 
@@ -175,18 +175,18 @@
   <div id="panel-upload" class="panel active">
     <div class="section-title">Upload Documents</div>
     <p class="section-sub">Upload files for SOVATHA to process. Files are stored securely.</p>
-    <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <div class="upload-zone" id="drop-zone" onclick="document.getElementById(&#39;file-input&#39;).click()">
       <div class="upload-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg>
       </div>
-      <h3>Click to upload or drag & drop</h3>
+      <h3>Click to upload or drag &amp; drop</h3>
       <p>PDF, Excel, Word, JPG, PNG — up to 50MB per file</p>
     </div>
-    <input type="file" id="file-input" multiple accept=".pdf,.xlsx,.xls,.docx,.doc,.jpg,.jpeg,.png,.csv">
+    <input type="file" id="file-input" multiple="" accept=".pdf,.xlsx,.xls,.docx,.doc,.jpg,.jpeg,.png,.csv">
     <div id="upload-list"></div>
     <div id="upload-actions" style="display:none; margin-top:1rem;">
       <button class="btn btn-gold" id="upload-btn" onclick="uploadAllFiles()">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg>
         Send to SOVATHA
       </button>
     </div>
@@ -200,14 +200,14 @@
   <div id="panel-requests" class="panel">
     <div class="section-title">Document Requests</div>
     <p class="section-sub">SOVATHA has requested these documents from you. Upload each item to complete the request.</p>
-    <div id="doc-requests-list"><div class="empty"><p>No document requests at this time.</p></div></div>
+    <div id="doc-requests-list"><div class="empty"><p>No document requests at this time. SOVATHA will notify you here when documents are needed.</p></div></div>
   </div>
 
   <!-- MY FILES (download) -->
   <div id="panel-download" class="panel">
     <div class="section-title">My Files</div>
     <p class="section-sub">Files uploaded by you and completed work delivered by SOVATHA.</p>
-    <div id="my-files-list"><div class="empty"><p>No files yet.</p></div></div>
+    <div id="my-files-list"><div class="empty"><p>No files yet. Upload documents from the Upload tab, or completed work from SOVATHA will appear here.</p></div></div>
   </div>
 
   <!-- SERVICE REQUEST -->
@@ -215,28 +215,28 @@
     <div class="section-title">Request a Service</div>
     <p class="section-sub">Select what you need and SOVATHA will respond within 1 business day.</p>
     <div class="service-grid">
-      <div class="service-card" onclick="toggleService(this,'Financial Statement Preparation')">
-        <div class="s-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg></div>
+      <div class="service-card" onclick="toggleService(this,&#39;Financial Statement Preparation&#39;)">
+        <div class="s-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line></svg></div>
         <h4>Financial Statements</h4><p>Balance sheet, income statement, cash flow</p>
       </div>
-      <div class="service-card" onclick="toggleService(this,'Monthly Tax Filing')">
-        <div class="s-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="service-card" onclick="toggleService(this,&#39;Monthly Tax Filing&#39;)">
+        <div class="s-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg></div>
         <h4>Monthly Tax Filing</h4><p>VAT, salary tax, withholding tax</p>
       </div>
-      <div class="service-card" onclick="toggleService(this,'Annual Tax on Income')">
-        <div class="s-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-        <h4>Annual Tax Return</h4><p>Tax on income preparation & submission</p>
+      <div class="service-card" onclick="toggleService(this,&#39;Annual Tax on Income&#39;)">
+        <div class="s-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+        <h4>Annual Tax Return</h4><p>Tax on income preparation &amp; submission</p>
       </div>
-      <div class="service-card" onclick="toggleService(this,'Accounting Data Entry')">
-        <div class="s-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/></svg></div>
+      <div class="service-card" onclick="toggleService(this,&#39;Accounting Data Entry&#39;)">
+        <div class="s-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"></rect><line x1="8" y1="9" x2="16" y2="9"></line><line x1="8" y1="13" x2="16" y2="13"></line></svg></div>
         <h4>Accounting Data Entry</h4><p>Bookkeeping, journals, reconciliation</p>
       </div>
-      <div class="service-card" onclick="toggleService(this,'Finance Law Liaison')">
-        <div class="s-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
-        <h4>Finance Law Liaison</h4><p>Regulatory advisory & government liaison</p>
+      <div class="service-card" onclick="toggleService(this,&#39;Finance Law Liaison&#39;)">
+        <div class="s-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg></div>
+        <h4>Finance Law Liaison</h4><p>Regulatory advisory &amp; government liaison</p>
       </div>
-      <div class="service-card" onclick="toggleService(this,'Other / Custom Request')">
-        <div class="s-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg></div>
+      <div class="service-card" onclick="toggleService(this,&#39;Other / Custom Request&#39;)">
+        <div class="s-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"></path></svg></div>
         <h4>Other / Custom</h4><p>Any other request or enquiry</p>
       </div>
     </div>
@@ -245,7 +245,7 @@
       <div class="form-group"><label>Deadline (if any)</label><input type="date" id="req-deadline"></div>
       <div class="form-group"><label>Additional notes</label><textarea id="req-notes" placeholder="Any specific instructions…"></textarea></div>
       <button class="btn btn-gold" id="submit-req-btn" onclick="submitRequest()">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
         Submit Request
       </button>
     </div>
@@ -256,13 +256,11 @@
     <div class="section-title">Messages</div>
     <p class="section-sub">Direct communication with SOVATHA Seilaboramy.</p>
     <div class="card" style="padding:1.25rem;">
-      <div class="message-thread" id="message-thread">
-        <div class="empty"><p>No messages yet. Send a message to get started.</p></div>
-      </div>
+      <div class="message-thread" id="message-thread"><div class="empty"><p>No messages yet.</p></div></div>
       <div class="msg-input-row">
-        <textarea id="msg-input" placeholder="Type a message…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
+        <textarea id="msg-input" placeholder="Type a message…" rows="1" onkeydown="if(event.key===&#39;Enter&#39;&amp;&amp;!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
         <button class="btn btn-primary" onclick="sendMessage()" style="height:44px;padding:0 1.1rem;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
         </button>
       </div>
     </div>
@@ -338,6 +336,36 @@ function renderFilePending(file) {
   file._elId = id;
 }
 
+const DRIVE_URL = 'https://script.google.com/macros/s/AKfycbyTqYqDyTRbjcoHqfv4PeAzgGvAaurJjuUFBGUllRprBtyQNWRuAnLps6ryVT8oVel6Ow/exec';
+
+async function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadToDrive(file, subfolder, uploadedBy) {
+  const fileData = await fileToBase64(file);
+  const response = await fetch(DRIVE_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      clientCode: clientId,
+      clientName: clientName,
+      fileName: file.name,
+      fileData,
+      mimeType: file.type || 'application/octet-stream',
+      uploadedBy: uploadedBy || 'client',
+      subfolder: subfolder || 'Client Uploads'
+    })
+  });
+  const result = await response.json();
+  if (!result.success) throw new Error(result.error || 'Upload failed');
+  return result;
+}
+
 async function uploadAllFiles() {
   if (!pendingFiles.length) return;
   const btn = document.getElementById('upload-btn');
@@ -349,19 +377,13 @@ async function uploadAllFiles() {
     if (badge) { badge.textContent = 'Uploading…'; badge.className = 'file-status status-uploading'; }
 
     try {
-      const path = `${clientId}/${Date.now()}_${file.name}`;
-      const {data: uploaded, error: upErr} = await sb.storage.from('client-files').upload(path, file, {upsert:true});
-      if (upErr) throw upErr;
+      const result = await uploadToDrive(file, 'Client Uploads', 'client');
 
-      const {data: urlData} = sb.storage.from('client-files').getPublicUrl(path);
-      const fileUrl = urlData.publicUrl;
-
-      const {error: dbErr} = await sb.from('client_files').insert([{
+      await sb.from('client_files').insert([{
         client_code: clientId, client_name: clientName,
-        file_name: file.name, file_url: fileUrl,
+        file_name: file.name, file_url: result.fileUrl,
         file_size: file.size, uploaded_by: 'client'
       }]);
-      if (dbErr) throw dbErr;
 
       if (badge) { badge.textContent = 'Sent ✓'; badge.className = 'file-status status-done'; }
     } catch(err) {
@@ -373,7 +395,7 @@ async function uploadAllFiles() {
   pendingFiles = [];
   btn.disabled = false; btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> Send to SOVATHA';
   document.getElementById('upload-actions').style.display = 'none';
-  toast('Files uploaded successfully!');
+  toast('Files uploaded to Google Drive!');
   loadMyFiles();
 }
 
@@ -434,18 +456,20 @@ async function uploadDocItem(itemId, reqId, input) {
   btn.textContent = 'Uploading…'; btn.disabled = true;
 
   try {
-    const path = `${clientId}/doc-requests/${reqId}/${Date.now()}_${file.name}`;
-    const {error: upErr} = await sb.storage.from('client-files').upload(path, file, {upsert:true});
-    if (upErr) throw upErr;
-    const {data: urlData} = sb.storage.from('client-files').getPublicUrl(path);
+    const result = await uploadToDrive(file, 'Document Requests', 'client');
 
-    const {error: dbErr} = await sb.from('doc_request_items').update({
-      uploaded: true, file_url: urlData.publicUrl,
+    await sb.from('doc_request_items').update({
+      uploaded: true, file_url: result.fileUrl,
       file_name: file.name, uploaded_at: new Date().toISOString()
     }).eq('id', itemId);
-    if (dbErr) throw dbErr;
 
-    toast('File uploaded: ' + file.name);
+    await sb.from('client_files').insert([{
+      client_code: clientId, client_name: clientName,
+      file_name: file.name, file_url: result.fileUrl,
+      file_size: file.size, uploaded_by: 'client'
+    }]);
+
+    toast('File uploaded to Google Drive: ' + file.name);
     loadDocRequests();
   } catch(err) {
     console.error(err);
@@ -581,5 +605,6 @@ function toast(msg) {
 
 init();
 </script>
-</body>
-</html>
+
+
+</body></html>
