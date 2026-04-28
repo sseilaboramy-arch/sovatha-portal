@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)file:///C:/Users/sokhe/Downloads/admin_9.html -->
+<!-- saved from url=(0043)file:///C:/Users/sokhe/Downloads/admin.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -891,23 +891,49 @@ async function fileToBase64(file) {
 async function uploadToDrive(file, clientCode, clientNameStr, subfolder, uploadedBy) {
   const fileData = await fileToBase64(file);
 
-  await fetch(DRIVE_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    body: JSON.stringify({
+  return new Promise((resolve, reject) => {
+    const iframeName = 'upload_frame_' + Date.now();
+    const iframe = document.createElement('iframe');
+    iframe.name = iframeName;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = DRIVE_URL;
+    form.target = iframeName;
+    form.style.display = 'none';
+
+    const fields = {
       clientCode, clientName: clientNameStr,
       fileName: file.name, fileData,
       mimeType: file.type || 'application/octet-stream',
       uploadedBy: uploadedBy || 'admin',
       subfolder: subfolder || 'Completed Work'
-    })
-  });
+    };
 
-  return {
-    success: true,
-    fileUrl: 'https://drive.google.com/drive/folders/' + MAIN_FOLDER_ID,
-    fileName: file.name
-  };
+    Object.entries(fields).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+
+    iframe.onload = () => {
+      try { document.body.removeChild(iframe); document.body.removeChild(form); } catch(e) {}
+      resolve({ success: true, fileUrl: 'https://drive.google.com/drive/folders/' + MAIN_FOLDER_ID, fileName: file.name });
+    };
+
+    setTimeout(() => {
+      try { document.body.removeChild(iframe); document.body.removeChild(form); } catch(e) {}
+      resolve({ success: true, fileUrl: 'https://drive.google.com/drive/folders/' + MAIN_FOLDER_ID, fileName: file.name });
+    }, 30000);
+
+    form.submit();
+  });
 }
 
 async function doAdminUpload(){
